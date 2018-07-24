@@ -3,8 +3,7 @@ package net.thenobody.parser
 object Brainfuck {
 
   def main(args: Array[String]): Unit = {
-//    val program = brainfuck.Parser.parse("++++++++>+++<[->+<]>.")
-    val program = brainfuck.Parser.parse(
+    val programs = Seq(
       """
         |[ This program prints "Hello World!" and a newline to the screen, its
         |  length is 106 active command characters. [It is not the shortest.]
@@ -49,8 +48,19 @@ object Brainfuck {
         |+++.------.--------.    Cell #3 for 'rl' and 'd'
         |>>+.                    Add 1 to Cell #5 gives us an exclamation point
         |>++.                    And finally a newline from Cell #6
-      """.stripMargin)
-    program.foreach(brainfuck.Interpreter.interpret)
+      """.stripMargin,
+      "++++++++[>++++[>++>+++>+++>+<<<<-]>+>+>->>+[<]<-]>>.>---.+++++++..+++.>>.<-.<.+++.------.--------.>>+.>++.",
+      """
+        |>++++++++[-<+++++++++>]<.>>+>-[+]++>++>+++[>[->+++<<+++>]<<]>-----.>->
+        |+++..+++.>-.<<+[>[+>+]>>]<--------------.>>.+++.------.--------.>+.>+.
+      """.stripMargin,
+    )
+
+    for {
+      input <- programs
+      program <- brainfuck.Parser.parse(input).toSeq
+      result = brainfuck.Interpreter.interpret(program)
+    } yield println(result.map(_.toChar).mkString)
   }
 
 }
