@@ -42,7 +42,7 @@ object Interpreter {
       case _ => StateT.pure(())
     }
 
-  def base2(implicit L: Monoid[Log]): Interpreter[Unit] = memMove(0)
+  def base(implicit L: Monoid[Log]): Interpreter[Unit] = memMove(0)
 
   def translate(ast: AST)(implicit L: Monoid[Log]): Interpreter[Unit] = ast match {
     case PtrMove(num) => ptrMove(num)
@@ -52,8 +52,14 @@ object Interpreter {
     case Loop(sub)    => loop(translateAll(sub))
   }
 
-  def translateAll(bf: BFProgram)(implicit L: Monoid[Log]): Interpreter[Unit] =
-    bf.map(translate).foldLeft(base2) { case (res, in) => res.flatMap(_ => in) }
+  def translateAll(bf: BFProgram)(implicit L: Monoid[Log]): Interpreter[Unit] = {
+    def go(left: Interpreter[Unit], right: Interpreter[Unit]): Interpreter[Unit] =
+      for {
+        _ <- left
+        _ <- right
+      } yield ()
+    bf.map(translate).foldLeft(base)(go)
+  }
 
   def interpret(bf: BFProgram): Log = {
     import cats.implicits._
