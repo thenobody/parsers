@@ -19,4 +19,5 @@ package object brainfuck {
   type ParserResult[A] = Either[ParseError, A]
   type Parser[A] = StateT[ParserResult, String, A]
 
+  type BFProgram = Seq[AST]
 }

@@ -31,12 +31,12 @@ object Parser {
     parsers.foldRight(Parser[A](_ => F.raiseError[(String, A)](Unknown)))(option[A])
 
   def many[A](parser: Parser[A])(implicit F: MonadError[ParserResult, ParseError]): Parser[Seq[A]] = {
-    def go(p: Parser[A]): Parser[Seq[A]] = for {
+    val result: Parser[Seq[A]] = for {
       a <- parser
       rest <- many(parser)
     } yield a +: rest
 
-    go(parser).handleError(_ => Seq())
+    result.handleError(_ => Seq())
   }
 
   def transform(char: Char, ast: AST)(implicit F: MonadError[ParserResult, ParseError]): Parser[AST] =
@@ -67,15 +67,15 @@ object Parser {
     case _              => F.raiseError(UnexpectedEof)
   }
 
-  def parseAll(implicit F: MonadError[ParserResult, ParseError]): Parser[Seq[AST]] =
+  def parseAll(implicit F: MonadError[ParserResult, ParseError]): Parser[BFProgram] =
     for {
       result <- many(parseOne)
       _ <- eof
     } yield result
 
-  def parse(input: String): ParserResult[Seq[AST]] = {
+  def parse(input: String): ParserResult[BFProgram] = {
     import cats.instances.either._
-    runParser(parseAll, input.replaceAll("[^<>+_.,\\[\\]]", ""))
+    runParser(parseAll, input.replaceAll("[^<>+\\-_.,\\[\\]]", ""))
   }
 
 }
