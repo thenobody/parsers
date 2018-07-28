@@ -54,12 +54,15 @@ object Brainfuck {
         |>++++++++[-<+++++++++>]<.>>+>-[+]++>++>+++[>[->+++<<+++>]<<]>-----.>->
         |+++..+++.>-.<<+[>[+>+]>>]<--------------.>>.+++.------.--------.>+.>+.
       """.stripMargin,
+      """
+        |,.
+      """.stripMargin
     )
 
     for {
       input <- programs
       program <- brainfuck.Parser.parse(input).toSeq
-      result = brainfuck.Interpreter.interpret(program)
+      result = brainfuck.Interpreter.debug(program)
     } yield println(result.map(_.toChar).mkString)
   }
 
