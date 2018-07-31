@@ -19,12 +19,8 @@ object Interpreter {
 
   implicit def interpreterSemigroup[A](
       implicit L: Monoid[Log]): Semigroup[Interpreter[A]] =
-    new Semigroup[Interpreter[A]] {
-      def combine(x: Interpreter[A], y: Interpreter[A]): Interpreter[A] =
-        for {
-          _ <- x
-          res <- y
-        } yield res
+    Semigroup.instance[Interpreter[A]] {
+      case (x, y) => x.flatMap(_ => y)
     }
 
   // formatters
@@ -126,8 +122,9 @@ object Interpreter {
   }
 
   def merge(sub: Seq[Interpreter[Unit]])(
-      implicit L: Monoid[Log]): Interpreter[Unit] =
-    sub.foldLeft(base)(_ |+| _)
+      implicit L: Monoid[Log],
+      F: Applicative[Interpreter]): Interpreter[Unit] =
+    sub.foldLeft(F.unit)(_ |+| _)
 
   def base(implicit L: Monoid[Log]): Interpreter[Unit] = memMove(0)
 
